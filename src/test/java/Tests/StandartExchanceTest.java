@@ -67,6 +67,14 @@ public class StandartExchanceTest {
 
         /***
          * Provided incorrect API KEY values
+         *
+         * {
+         *     "result": "error",
+         *     "documentation": "https://www.exchangerate-api.com/docs",
+         *     "terms-of-use": "https://www.exchangerate-api.com/terms",
+         *     "error-type": "inactive-account",
+         *     "extra-info": "Please contact support."
+         * }
          */
         Response response = RestAssured.given().contentType(ContentType.JSON)
                 .and().pathParam("api-key", ConfigurationReader.get("incorrect-api-key"))
@@ -85,4 +93,32 @@ public class StandartExchanceTest {
 
     }
 
+    /***
+     * Provided incorrect currency
+     *
+     * {
+     *     "result": "error",
+     *     "documentation": "https://www.exchangerate-api.com/docs",
+     *     "terms-of-use": "https://www.exchangerate-api.com/terms",
+     *     "error-type": "unsupported-code"
+     * }
+     */
+
+    @Test
+    public void standartExchangeRate_NegativeTest2(){
+        Response response = RestAssured.given().contentType(ContentType.JSON)
+                .and().pathParam("api-key", ConfigurationReader.get("api-key"))
+                .when().get("/{api-key}/latest/US");
+
+        response.prettyPrint();
+
+        Assert.assertEquals(response.statusCode(), 404);
+
+        JsonPath jsonPath = response.jsonPath();
+        String result = jsonPath.getString("result");
+        log.info("result = " + result);
+        Assert.assertEquals(result, "error");
+        Assert.assertEquals(jsonPath.getString("error-type"), "unsupported-code", "The error type is NOT correct.");
+
+    }
 }
